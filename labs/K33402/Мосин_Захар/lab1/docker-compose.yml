@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  auth:
+    container_name: auth
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8000
+      - DB_NAME=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=1234
+      - DB_HOST=postgresdb
+    depends_on:
+      - rabbitmq
+      - postgresdb
+    ports:
+      - '8000:8000'
+    networks:
+      - mynetwork
+
+  app:
+    container_name: app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    environment:
+      - PORT=5000
+      - AUTH_PORT=8000
+      - DB_NAME=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=1234
+      - DB_HOST=postgresdb
+      - HOST=auth
+    depends_on:
+      - rabbitmq
+      - postgresdb
+    networks:
+      - mynetwork
+    ports:
+      - '5000:5000'
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:
+      - mynetwork
+
+  postgresdb:
+    image: postgres:16
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_HOST=postgresdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+volumes:
+  database_data:
+    driver: local
+
+networks:
+  mynetwork:
+    driver: bridge
