@@ -22,6 +22,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       #test
+      #t
       - uses: actions/checkout@v4
       
       - name: 'Yandex Cloud CR "Login" Action for GitHub Actions'
